@@ -17,7 +17,7 @@ Um app de **linha de comando** que:
 - **Subalgoritmos (funções)**: `src/calculos.py`, `src/validacao.py`, `src/io_arquivos.py`, `src/db_oracle.py`, `src/app.py`  
 - **Estruturas de dados**: lista/tupla/dicionário → **tabela de memória** em `app.py` (`colheitas: list[dict]`)
 - **Manipulação de arquivos**: `io_arquivos.py` salva **JSON** e **log.txt**
-- **Conexão com banco Oracle**: `db_oracle.py` (criação de tabela, INSERT e SELECT)
+- **Conexão com banco Oracle**: `db_oracle.py` (criação de tabela, **UPSERT com MERGE**, SELECT e exclusões)
 
 ---
 
@@ -70,6 +70,9 @@ python src/app.py
   - **6. Sair**
 - **Valida entradas** (números ≥ 0, método manual/mecânica, etc.).
 - **Cria a tabela Oracle** automaticamente (tratando já-existente) e permite **inserir** e **consultar**.
+- Exportação para Oracle agora usa **UPSERT (MERGE)**, atualizando registros já existentes automaticamente;
+- Também é possível **excluir registros individualmente ou todos de uma vez** pelo submenu Oracle.
+
 
 ---
 
@@ -97,9 +100,32 @@ CREATE TABLE COLHEITAS (
   TOTAL_TON     NUMBER(14,2)
 );
 ```
+> ℹ️ Observação:  
+> A exportação usa comando `MERGE` para realizar **UPSERT**, ou seja:
+> - se o ID já existir, o registro é **atualizado**;  
+> - se não existir, é **inserido**;  
+> - elimina o erro de chave duplicada (ORA-00001).
+
+
+---
+
+---
+
+## 🖼️ Exemplos visuais
+| Tela | Descrição |
+|------|------------|
+| ![menu](docs/menu.png) | Menu principal (CLI colorido) |
+| ![cards](docs/cards.png) | Exibição de colheitas formatada |
+  ![perdas](docs/resumo_de_perdas.png) | Exibição de resumo de perdas |
+| ![oracle](docs/oracle_menu.png) | Submenu Oracle (CRUD e sincronização) |
+
+> As capturas reforçam a clareza visual e usabilidade do app no terminal.
+
 
 ---
 
 ## 📌 Observações
 - Se o Oracle **não estiver acessível**, o app **segue funcional** (JSON/Log) e as funções de banco apenas informarão erro amigável;
-- Este projeto foi desenhado para **clareza didática** e **conformidade integral** com a avaliação.
+- Este projeto foi desenhado para **clareza didática** e **conformidade integral** com a avaliação.'
+- As credenciais Oracle devem ser configuradas via variáveis de ambiente e nunca commitadas;
+- Recomenda-se incluir `.env` no `.gitignore` para proteger dados sensíveis.
