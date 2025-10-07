@@ -26,15 +26,22 @@ Um app de **linha de comando** que:
 agro-gestao-simplificada/
 ├─ README.md
 ├─ requirements.txt
+├─ .gitignore
 ├─ src/
 │  ├─ app.py
 │  ├─ calculos.py
 │  ├─ validacao.py
 │  ├─ io_arquivos.py
 │  └─ db_oracle.py
+├─ docs/
+│  ├─ colheitas.png
+│  ├─ menu.png
+│  ├─ oracle_menu.png
+│  ├─ resumo_de_perdas.png
 └─ data/
    ├─ colheitas.json
    └─ log.txt
+
 ```
 `data/colheitas.json` e `data/log.txt` serão criados automaticamente.
 
@@ -67,7 +74,8 @@ python src/app.py
   - **3. Resumo de perdas (t e R$)**
   - **4. Salvar/Carregar JSON + Log**
   - **5. Exportar/Consultar no Oracle**
-  - **6. Sair**
+  - **6. Excluir colheita**
+  - **7. Sair**
 - **Valida entradas** (números ≥ 0, método manual/mecânica, etc.).
 - **Cria a tabela Oracle** automaticamente (tratando já-existente) e permite **inserir** e **consultar**.
 - Exportação para Oracle agora usa **UPSERT (MERGE)**, atualizando registros já existentes automaticamente;
