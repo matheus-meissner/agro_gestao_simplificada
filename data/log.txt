@@ -5,3 +5,13 @@
 [2025-10-06T19:41:32] Cadastrada colheita 81f377f7-51cd-4abe-b3b9-ab19357ed0b2 (cana-de-acucar)
 [2025-10-06T19:50:44] Cadastrada colheita 6cee009d-4e9e-41db-af57-fa04a6ca9d39 (cana-de-acucar)
 [2025-10-06T19:52:05] Cadastrada colheita 9a3f1e80-8fab-4efc-9603-6472fbd4ccd1 (teste)
+[2025-10-07T10:18:08] Excluiu colheita d42fdf89-7293-4444-adc2-e5a02f83f5b3 (500)
+[2025-10-07T10:18:31] Cadastrada colheita 1bf61801-5f1d-439a-a07d-947ace3022ee (cana_de_acucar)
+[2025-10-07T10:18:53] Cadastrada colheita e6b74f32-97f2-4318-b5ef-f0254ca1e3a6 (cafe)
+[2025-10-07T10:19:23] Salvou JSON
+[2025-10-07T10:19:30] Carregou JSON
+[2025-10-07T10:34:50] Excluiu colheita 1bf61801-5f1d-439a-a07d-947ace3022ee (cana_de_acucar)
+[2025-10-07T10:35:16] Cadastrada colheita 0e6191e6-f73e-46a5-bb5a-a4b5b6a6459b (cana de açúcar)
+[2025-10-07T10:35:27] Excluiu colheita e6b74f32-97f2-4318-b5ef-f0254ca1e3a6 (cafe)
+[2025-10-07T10:35:44] Cadastrada colheita 5c03a1b3-b65a-4633-b2f0-d2e0f565be6d (café)
+[2025-10-07T10:36:03] Salvou JSON
