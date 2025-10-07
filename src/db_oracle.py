@@ -28,10 +28,39 @@ CREATE TABLE COLHEITAS (
 )
 """
 
-INSERT_SQL = """
-INSERT INTO COLHEITAS
-(ID, DATA_COLHEITA, TALHAO, AREA_HA, PROD_T_HA, METODO, PRECO_TON, PERDA_PCT, PERDA_TON, PERDA_REAIS, TOTAL_TON)
-VALUES (:1, TO_DATE(:2, 'YYYY-MM-DD'), :3, :4, :5, :6, :7, :8, :9, :10, :11)
+MERGE_SQL = """
+MERGE INTO COLHEITAS t
+USING (
+  SELECT
+    :id            AS id,
+    TO_DATE(:data, 'YYYY-MM-DD') AS data_colheita,
+    :talhao        AS talhao,
+    :area_ha       AS area_ha,
+    :prod_t_ha     AS prod_t_ha,
+    :metodo        AS metodo,
+    :preco_ton     AS preco_ton,
+    :perda_pct     AS perda_pct,
+    :perda_ton     AS perda_ton,
+    :perda_reais   AS perda_reais,
+    :total_ton     AS total_ton
+  FROM dual
+) s
+ON (t.ID = s.id)
+WHEN MATCHED THEN
+  UPDATE SET
+    t.DATA_COLHEITA = s.data_colheita,
+    t.TALHAO        = s.talhao,
+    t.AREA_HA       = s.area_ha,
+    t.PROD_T_HA     = s.prod_t_ha,
+    t.METODO        = s.metodo,
+    t.PRECO_TON     = s.preco_ton,
+    t.PERDA_PCT     = s.perda_pct,
+    t.PERDA_TON     = s.perda_ton,
+    t.PERDA_REAIS   = s.perda_reais,
+    t.TOTAL_TON     = s.total_ton
+WHEN NOT MATCHED THEN
+  INSERT (ID, DATA_COLHEITA, TALHAO, AREA_HA, PROD_T_HA, METODO, PRECO_TON, PERDA_PCT, PERDA_TON, PERDA_REAIS, TOTAL_TON)
+  VALUES (s.id, s.data_colheita, s.talhao, s.area_ha, s.prod_t_ha, s.metodo, s.preco_ton, s.perda_pct, s.perda_ton, s.perda_reais, s.total_ton)
 """
 
 
