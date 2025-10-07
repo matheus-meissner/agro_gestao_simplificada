@@ -32,6 +32,10 @@ def moeda(v: float) -> str:
     s = f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     return f"R$ {s}"
 
+def num_br(v: float, casas: int = 2) -> str:
+    s = f"{float(v):,.{casas}f}"
+    return s.replace(",", "X").replace(".", ",").replace("X", ".")
+
 def card_header(txt):
     bar = "═" * (len(txt) + 4)
     print(Fore.CYAN + f"\n╔{bar}╗")
@@ -87,6 +91,40 @@ def listar_colheitas():
         print(f"{Fore.RED}Custo da perda:{Style.RESET_ALL} {moeda(r['perda_reais'])}")
 
 
+def deletar_colheita():
+    if not colheitas:
+        warn("Sem registros para excluir.")
+        return
+
+    # Mostra os cartões pra pessoa escolher
+    listar_colheitas()
+
+    # Pede o número do registro (1..N)
+    try:
+        idx = int(input(Fore.CYAN + "Digite o número do registro para excluir: " + Style.RESET_ALL).strip())
+    except ValueError:
+        warn("Número inválido.")
+        return
+
+    if idx < 1 or idx > len(colheitas):
+        warn("Índice fora do intervalo.")
+        return
+
+    reg = colheitas[idx - 1]
+    confirma = input(Fore.YELLOW + f"Confirmar exclusão de '{reg['talhao']}' em {reg['data']}? (s/n): " + Style.RESET_ALL).strip().lower()
+    if confirma != "s":
+        warn("Exclusão cancelada.")
+        return
+
+    # Remove da tabela em memória
+    removido = colheitas.pop(idx - 1)
+
+    # Persiste no JSON para refletir a exclusão
+    salvar_json(colheitas)
+    log(f"Excluiu colheita {removido['id']} ({removido['talhao']})")
+
+    ok("Registro excluído e JSON atualizado.")
+
 
 
 def resumo_perdas():
@@ -113,9 +151,23 @@ def salvar_carregar():
 
 
 def oracle_ops():
-    section("Oracle")
-    print("1) Criar tabela\n2) Exportar dados\n3) Consultar")
-    op = input(Fore.CYAN + "Escolha: " + Style.RESET_ALL).strip()
+    print(Fore.CYAN + "\n» Oracle" + Style.RESET_ALL)
+
+    # cor alternativa: pode trocar Fore.CYAN por Fore.GREEN ou Fore.YELLOW
+    menu_color = Style.BRIGHT + Fore.CYAN  # <— escolha aqui a cor do submenu
+    reset = Style.RESET_ALL
+
+    print(
+        menu_color
+        + "[1] Criar tabela\n"
+        + "[2] Exportar dados\n"
+        + "[3] Consultar\n"
+        + "[4] Excluir por ID\n"
+        + "[5] Excluir TODOS"
+        + reset
+    )
+
+    op = input(Fore.CYAN + "\nEscolha: " + Style.RESET_ALL).strip()
     try:
         conn = db_oracle.conectar()
     except Exception as e:
@@ -127,14 +179,71 @@ def oracle_ops():
     elif op == "2":
         msg = db_oracle.exportar(colheitas, conn); ok(msg)
     elif op == "3":
-        # (por enquanto, mantém a saída original / depois a gente troca pela tabela bonita do db_oracle)
-        rows = db_oracle.consultar(conn)
-        section("Registros no Oracle")
-        for r in rows: print(r)
+        rows = db_oracle.consultar(conn)  # precisa RETORNAR as linhas (não imprimir)
+        if not rows:
+            warn("📭 Nada encontrado no Oracle.")
+        else:
+            section("Registros no Oracle")
+            from datetime import date, datetime
+            for i, r in enumerate(rows, 1):
+                # r = (id, data, talhao, area_ha, prod_t_ha, metodo, preco_ton, perda_pct, perda_ton, perda_reais, total_ton)
+                rid, data, talhao, area, prod, metodo, preco, perda_pct, perda_ton, perda_reais, total_t = r
+
+                # normaliza data
+                if isinstance(data, (datetime, date)):
+                    data = data.strftime("%Y-%m-%d")
+
+                # cabeçalho no mesmo estilo dos seus cards
+                card_header(f"Registro Oracle #{i} – {talhao} ({str(rid)[:8]}…)")
+
+                # campos, um por linha
+                print(f"{Fore.GREEN}Data:{Style.RESET_ALL} {data}")
+                print(f"{Fore.CYAN}Método:{Style.RESET_ALL} {metodo}")
+                print(f"{Fore.WHITE}Área:{Style.RESET_ALL} {num_br(area)} ha")
+                print(f"{Fore.WHITE}Produtividade:{Style.RESET_ALL} {num_br(prod)} t/ha")
+                print(f"{Fore.WHITE}Preço:{Style.RESET_ALL} {moeda(preco)}")
+                print(f"{Fore.RED}Perda:{Style.RESET_ALL} {num_br(perda_ton)} t  ({num_br(perda_pct,1)}%)")
+                print(f"{Fore.RED}Custo da perda:{Style.RESET_ALL} {moeda(perda_reais)}")
+                print(f"{Fore.WHITE}Total produzido:{Style.RESET_ALL} {num_br(total_t)} t")
+
+    elif op == "4":
+        # lista IDs para o usuário escolher e apaga um
+        itens = db_oracle.listar_ids(conn)
+        if not itens:
+            warn("📭 Nada para excluir no Oracle.")
+        else:
+            print("\nSelecione o registro para excluir:")
+            for i, (rid, data, talhao) in enumerate(itens, 1):
+                print(f"[{i}] {rid[:8]}…  | {data} | {talhao}")
+            try:
+                idx = int(input(Fore.CYAN + "Número: " + Style.RESET_ALL).strip())
+                if idx < 1 or idx > len(itens):
+                    warn("Índice inválido.")
+                else:
+                    alvo = itens[idx-1][0]
+                    conf = input(Fore.YELLOW + f"Confirmar exclusão do ID {alvo[:8]}…? (s/n): " + Style.RESET_ALL).strip().lower()
+                    if conf == "s":
+                        msg = db_oracle.apagar_por_id(conn, alvo)
+                        print("🗑️ ", msg)
+                    else:
+                        warn("Cancelado.")
+            except ValueError:
+                warn("Digite um número válido.")
+
+    elif op == "5":
+        conf = input(Fore.YELLOW + "⚠️ Excluir TODOS os registros no Oracle? (s/n): " + Style.RESET_ALL).strip().lower()
+        if conf == "s":
+            msg = db_oracle.apagar_todos(conn)
+            print("🗑️ ", msg)
+        else:
+            warn("Cancelado.")
     else:
         warn("Opção inválida.")
-    try: conn.close()
-    except: pass
+
+    try:
+        conn.close()
+    except:
+        pass
 
 
 def menu():
@@ -147,7 +256,8 @@ def menu():
             "[3] Resumo de perdas\n"
             "[4] Salvar/Carregar JSON\n"
             "[5] Oracle (criar/exportar/consultar)\n"
-            "[6] Sair" +
+            "[6] Excluir colheita\n"
+            "[7] Sair\n" +
             Style.RESET_ALL
         )
         op = input(Fore.CYAN + "Escolha: " + Style.RESET_ALL).strip()
@@ -156,7 +266,8 @@ def menu():
         elif op == "3": resumo_perdas()
         elif op == "4": salvar_carregar()
         elif op == "5": oracle_ops()
-        elif op == "6":
+        elif op == "6": deletar_colheita()
+        elif op == "7":
             print(Fore.CYAN + "Até mais! 👋" + Style.RESET_ALL)
             break
         else:
