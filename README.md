@@ -123,7 +123,7 @@ CREATE TABLE COLHEITAS (
 | Tela | Descrição |
 |------|------------|
 | ![menu](docs/menu.png) | Menu principal (CLI colorido) |
-| ![cards](docs/cards.png) | Exibição de colheitas formatada |
+| ![cards](docs/colheitas.png) | Exibição de colheitas formatada |
   ![perdas](docs/resumo_de_perdas.png) | Exibição de resumo de perdas |
 | ![oracle](docs/oracle_menu.png) | Submenu Oracle (CRUD e sincronização) |
 
